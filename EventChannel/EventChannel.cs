@@ -2,12 +2,17 @@ using System.Threading.Channels;
 
 namespace EventChannelLib;
 
+public interface IEventChannel
+{
+    Type EventType { get; }
+}
 /// <summary>
 /// A generic event channel that processes items of type T using System.Threading.Channels
 /// </summary>
 /// <typeparam name="T">The type of items that will be processed by this channel</typeparam>
-public class EventChannel<T>
+public class EventChannel<T> : IEventChannel
 {
+    public Type EventType => typeof(T);
     private readonly Channel<T> _channel;
     private CancellationTokenSource _cts;
 

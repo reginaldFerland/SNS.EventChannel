@@ -12,13 +12,6 @@ services:
       - AWS_SECRET_ACCESS_KEY=test
     ports:
       - "4566:4566"
-    volumes:
-      - "./localstack-init:/docker-entrypoint-initaws.d"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/health"]
-      interval: 5s
-      timeout: 10s
-      retries: 3
 
 volumes:
   localstack-data:

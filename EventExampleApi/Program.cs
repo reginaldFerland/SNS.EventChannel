@@ -32,9 +32,17 @@ if (builder.Configuration.GetValue<bool>("AWS:UseLocalStack"))
     awsOptions.DefaultClientConfig.ServiceURL = localStackUrl;
     builder.Services.AddEventChannel<OrderCreatedEvent>(options =>
     {
-        options.TopicArn = builder.Configuration["AWS:LocalStack:TopicArn"];
+        options.TopicArn = builder.Configuration["EventChannel:TopicArn"];
         options.MaxRetryAttempts = 3;
         options.BoundedCapacity = 1_000_000;
+        options.ServiceUrl = localStackUrl;
+    });
+    builder.Services.AddEventChannel<OrderCreatedEvent2>(options =>
+    {
+        options.TopicArn = builder.Configuration["EventChannel:TopicArn"];
+        options.MaxRetryAttempts = 3;
+        options.BoundedCapacity = 1_000_000;
+        options.ServiceUrl = localStackUrl;
     });
     builder.Services.AddEventRaiser();
 

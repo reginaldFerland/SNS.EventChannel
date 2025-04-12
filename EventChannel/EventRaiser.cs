@@ -22,22 +22,15 @@ public class EventRaiser
     /// </summary>
     /// <param name="serviceProvider">Service provider to resolve event channels</param>
     /// <param name="logger">Logger for the EventRaiser</param>
-    public EventRaiser(IServiceProvider serviceProvider, ILogger<EventRaiser> logger)
+    public EventRaiser(IEnumerable<IEventChannel> channels, ILogger<EventRaiser> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         // Find all registered EventChannel<T> services
-        var channelType = typeof(EventChannel<>);
-        var registeredServices = serviceProvider.GetServices<object>()
-            .Where(service => service != null &&
-                  service.GetType().IsGenericType &&
-                  service.GetType().GetGenericTypeDefinition() == channelType);
-
-        foreach (var service in registeredServices)
+        foreach (var channel in channels)
         {
-            var genericType = service.GetType().GetGenericArguments()[0];
-            _eventChannels[genericType] = service;
-            _logger.LogInformation("Auto-registered event channel for type {EventType}", genericType.Name);
+            var eventType = channel.EventType;
+            _eventChannels.TryAdd(eventType, channel);
         }
     }
 

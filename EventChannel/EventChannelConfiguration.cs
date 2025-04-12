@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Amazon;
 
 namespace EventChannelLib;
 
@@ -27,6 +28,21 @@ public class EventChannelConfig
     /// The maximum number of items that can be stored in the channel
     /// </summary>
     public int BoundedCapacity { get; set; } = 1_000_000;
+
+    /// <summary>
+    /// AWS region name (e.g., "us-east-1")
+    /// </summary>
+    public string RegionName { get; set; }
+
+    /// <summary>
+    /// AWS region endpoint
+    /// </summary>
+    public RegionEndpoint RegionEndpoint { get; set; }
+
+    /// <summary>
+    /// Custom service URL for the SNS service
+    /// </summary>
+    public string ServiceUrl { get; set; }
 }
 
 /// <summary>

@@ -179,16 +179,11 @@ public class EventChannelWorker<T> : IHostedService
                     _logger.LogError("Failed to publish message {MessageId}: {Code} - {Message}",
                         failedEntry.Id, failedEntry.Code, failedEntry.Message);
                 }
-
-                // If we have any failures, throw an exception to indicate the batch wasn't fully processed
-                throw new AggregateException($"Failed to publish {response.Failed.Count} messages to SNS",
-                    response.Failed.Select(f => new Exception($"{f.Code}: {f.Message}")));
             }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Failed to publish batch to SNS: {ErrorMessage}", ex.Message);
-            throw;
         }
     }
 
@@ -210,6 +205,9 @@ public class EventChannelWorker<T> : IHostedService
         }
     }
 
+    private Task? _processingTask;
+    private CancellationTokenSource? _stoppingCts;
+
     /// <summary>
     /// Starts the worker as a hosted service
     /// </summary>
@@ -217,16 +215,47 @@ public class EventChannelWorker<T> : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting EventChannelWorker hosted service");
-        return ProcessChannelAsync(cancellationToken);
+
+        // Create a linked token source that will be cancelled when the application stops
+        _stoppingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        // Start processing in the background (not awaited)
+        _processingTask = ProcessChannelAsync(_stoppingCts.Token);
+
+        // Return completed task to allow startup to continue
+        return Task.CompletedTask;
     }
 
     /// <summary>
     /// Stops the worker gracefully
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Stopping EventChannelWorker hosted service");
-        return Task.CompletedTask;
+
+        // Cancel our processing loop
+        if (_stoppingCts != null)
+        {
+            _stoppingCts.Cancel();
+            _stoppingCts.Dispose();
+        }
+
+        // Wait for the processing task to complete with a timeout
+        if (_processingTask != null)
+        {
+            try
+            {
+                await Task.WhenAny(_processingTask, Task.Delay(5000, cancellationToken));
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when cancellation is requested
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error stopping worker: {ErrorMessage}", ex.Message);
+            }
+        }
     }
 }
