@@ -1,7 +1,9 @@
 using System;
+using Amazon.SimpleNotificationService;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace EventChannelLib;
 
@@ -32,17 +34,23 @@ public static class EventChannelExtensions
     /// <returns>The builder for method chaining</returns>
     public static IServiceCollection AddEventChannel<T>(
         this IServiceCollection services,
-        Action<EventChannelConfig>? configure = null) where T : class
+        Action<EventChannelConfig> configure) where T : class
     {
         var options = new EventChannelConfig();
-        configure?.Invoke(options);
+        configure.Invoke(options);
 
         // Register the channel as singleton
         services.TryAddSingleton<EventChannel<T>>(sp =>
             new EventChannel<T>(options.BoundedCapacity));
 
-        // Register the worker as a hosted service
-        services.AddHostedService<EventChannelWorker<T>>();
+        // Register the worker as a hosted service with config
+        services.AddHostedService<EventChannelWorker<T>>(sp =>
+            new EventChannelWorker<T>(
+                sp.GetRequiredService<EventChannel<T>>(),
+                sp.GetRequiredService<AmazonSimpleNotificationServiceClient>(),
+                options.TopicArn,
+                sp.GetRequiredService<ILogger<EventChannelWorker<T>>>(),
+                options.MaxRetryAttempts));
 
         return services;
     }

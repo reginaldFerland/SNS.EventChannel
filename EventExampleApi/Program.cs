@@ -1,3 +1,6 @@
+using Amazon;
+using Amazon.Runtime;
+using Amazon.Extensions.NETCore.Setup;
 using EventChannelLib;
 using EventExampleApi.Models;
 using Microsoft.AspNetCore.Builder;
@@ -6,18 +9,46 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register the EventChannel services
-builder.Services.AddEventChannel<OrderCreatedEvent>();
-builder.Services.AddEventRaiser();
+// Configure AWS options based on environment
+var awsOptions = new AWSOptions
+{
+    Region = RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"] ?? "us-east-1"),
+};
+
+// Configure LocalStack if enabled
+if (builder.Configuration.GetValue<bool>("AWS:UseLocalStack"))
+{
+    awsOptions.Credentials = new BasicAWSCredentials(
+        builder.Configuration["AWS:AccessKey"],
+        builder.Configuration["AWS:SecretKey"]);
+
+    var localStackUrl = builder.Configuration["AWS:LocalStackUrl"];
+
+    awsOptions.DefaultClientConfig.ServiceURL = localStackUrl;
+    builder.Services.AddEventChannel<OrderCreatedEvent>(options =>
+    {
+        options.TopicArn = builder.Configuration["AWS:LocalStack:TopicArn"];
+        options.MaxRetryAttempts = 3;
+        options.BoundedCapacity = 1_000_000;
+    });
+    builder.Services.AddEventRaiser();
+
+}
+else
+{
+    // Standard AWS configuration for production
+    builder.Services.AddDefaultAWSOptions(awsOptions);
+    builder.Services.AddSingleton<EventRaiser>();
+}
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
