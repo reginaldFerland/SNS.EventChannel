@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace EventChannelLib;
+namespace SNS.EventChannel;
 
 /// <summary>
 /// Extension methods for registering and configuring event channels

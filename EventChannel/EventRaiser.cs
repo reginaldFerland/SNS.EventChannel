@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace EventChannelLib;
+namespace SNS.EventChannel;
 
 /// <summary>
 /// Class for raising events to be published to SNS via event channels

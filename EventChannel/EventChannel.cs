@@ -1,6 +1,6 @@
 using System.Threading.Channels;
 
-namespace EventChannelLib;
+namespace SNS.EventChannel;
 
 public interface IEventChannel
 {

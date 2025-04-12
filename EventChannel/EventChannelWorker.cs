@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using Microsoft.Extensions.Hosting;
 
-namespace EventChannelLib;
+namespace SNS.EventChannel;
 
 /// <summary>
 /// A worker that processes items from an EventChannel and publishes them to SNS

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Amazon;
 
-namespace EventChannelLib;
+namespace SNS.EventChannel;
 
 /// <summary>
 /// Configuration for a single event channel
