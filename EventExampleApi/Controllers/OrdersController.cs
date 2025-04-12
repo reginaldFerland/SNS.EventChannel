@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using EventChannelLib;
 using EventExampleApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SNS.EventChannel;
 
 namespace EventExampleApi.Controllers;
 

@@ -1,11 +1,12 @@
 using Amazon;
 using Amazon.Runtime;
 using Amazon.Extensions.NETCore.Setup;
-using EventChannelLib;
 using EventExampleApi.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Amazon.Auth.AccessControlPolicy.ActionIdentifiers;
+using SNS.EventChannel;
 
 var builder = WebApplication.CreateBuilder(args);
 
