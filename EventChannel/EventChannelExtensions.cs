@@ -15,7 +15,7 @@ public static class EventChannelExtensions
     /// </summary>
     /// <param name="services">The service collection</param>
     /// <returns>Event channel builder for further configuration</returns>
-    public static IServiceCollection AddEventChannels(this IServiceCollection services)
+    public static IServiceCollection AddEventRaiser(this IServiceCollection services)
     {
         // Register the EventRaiser as singleton
         services.TryAddSingleton<EventRaiser>();
