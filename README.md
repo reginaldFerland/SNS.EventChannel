@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/SNS.EventChannel.svg)](https://www.nuget.org/packages/SNS.EventChannel/)
 [![Build Status](https://github.com/reginaldFerland/SNS.EventChannel/actions/workflows/build.yml/badge.svg)](https://github.com/reginaldFerland/SNS.EventChannel/actions)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 
 ## Overview
 
