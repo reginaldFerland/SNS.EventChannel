@@ -13,7 +13,9 @@ SNS.EventChannel is a lightweight, high-performance .NET library that provides a
 - 🚀 High performance, minimal overhead event dispatching
 - 🔄 Asynchronous and synchronous event handling
 - 🧩 Strong typing for events with generic support
-- 🛡️ Thread-safe event publication and subscription
+- 🛡️ Thread-safe event publication
+
+## TODO
 - 🔌 Pluggable architecture for custom extensions
 - 📊 Built-in support for monitoring and metrics
 
@@ -91,8 +93,6 @@ IEventChannel eventChannel = new EventChannel(options);
 SNS.EventChannel is designed with performance in mind:
 
 - Minimal allocations during event dispatch
-- Efficient handler lookup using optimized data structures
-- Configurable thread pool for handling concurrent events
 - Support for batched event publishing
 
 ## Contributing
