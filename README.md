@@ -35,6 +35,12 @@ dotnet add package SNS.EventChannel
 
 ## Quick Start
 
+### Install dependencies
+```
+dotnet add package 
+dotnet add package polly
+```
+
 ### Define Your Event
 
 ```csharp

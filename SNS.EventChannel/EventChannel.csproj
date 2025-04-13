@@ -9,7 +9,14 @@
     <PackageId>SNS.EventChannel</PackageId>
     <Version>1.0.0</Version>
     <Authors>Reginald Ferland</Authors>
+    <copyright>2025 Reginald Ferland</copyright>
     <Description>A library for processing events and publishing them to SNS with resilience capabilities</Description>
+    <PackageTags>aws sns event channel</PackageTags>
+    <PackageProjectUrl>https://github.com/reginaldFerland/SNS.EventChannel</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/reginaldFerland/SNS.EventChannel</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <README>../README.md</README>
+    <PackageLicenseFile>../LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
