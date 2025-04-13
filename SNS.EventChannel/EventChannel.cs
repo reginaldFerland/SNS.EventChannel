@@ -14,7 +14,6 @@ public class EventChannel<T> : IEventChannel
 {
     public Type EventType => typeof(T);
     private readonly Channel<T> _channel;
-    private CancellationTokenSource _cts;
 
     /// <summary>
     /// Creates a new instance of the EventChannel
@@ -26,7 +25,6 @@ public class EventChannel<T> : IEventChannel
         {
             FullMode = BoundedChannelFullMode.Wait
         });
-        _cts = new CancellationTokenSource();
     }
 
     /// <summary>
@@ -55,31 +53,6 @@ public class EventChannel<T> : IEventChannel
         {
             await WriteAsync(item, cancellationToken);
         }
-    }
-
-    /// <summary>
-    /// Clears the channel and waits for completion
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
-    public async Task ClearAsync(CancellationToken cancellationToken = default)
-    {
-        _channel.Writer.Complete();
-        await _channel.Reader.Completion;
-    }
-
-    /// <summary>
-    /// Disposes the channel and associated resources
-    /// </summary>
-    public async ValueTask DisposeAsync()
-    {
-        if (!_cts.IsCancellationRequested)
-        {
-            await _cts.CancelAsync();
-        }
-
-        _channel.Writer.Complete();
-
-        _cts.Dispose();
     }
 
     /// <summary>
