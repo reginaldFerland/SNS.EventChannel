@@ -1,6 +1,7 @@
 using System;
 using Amazon;
 using Xunit;
+using SNS.EventChannel;
 
 namespace SNS.EventChannel.Tests;
 
