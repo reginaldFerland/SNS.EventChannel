@@ -32,17 +32,17 @@ public class EventChannelConfig
     /// <summary>
     /// AWS region name (e.g., "us-east-1")
     /// </summary>
-    public string RegionName { get; set; }
+    public string RegionName { get; set; } = "us-east-1";
 
     /// <summary>
     /// AWS region endpoint
     /// </summary>
-    public RegionEndpoint RegionEndpoint { get; set; }
+    public RegionEndpoint RegionEndpoint { get; set; } = RegionEndpoint.USEast1;
 
     /// <summary>
     /// Custom service URL for the SNS service
     /// </summary>
-    public string ServiceUrl { get; set; }
+    public string ServiceUrl { get; set; } = string.Empty;
 }
 
 /// <summary>
