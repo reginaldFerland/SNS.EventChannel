@@ -1,4 +1,4 @@
 BenchmarkDotNet.Artifacts/
 **/bin/
 **/obj/
-SNS.EventChannel.Tests/lcov.info
+**/lcov.info
