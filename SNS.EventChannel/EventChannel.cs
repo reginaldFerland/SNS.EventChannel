@@ -27,7 +27,6 @@ public class EventChannel<T> : IEventChannel
             FullMode = BoundedChannelFullMode.Wait
         });
         _cts = new CancellationTokenSource();
-
     }
 
     /// <summary>

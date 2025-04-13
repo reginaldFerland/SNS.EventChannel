@@ -30,7 +30,8 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"formulahendry.dotnet-test-explorer"
+				"formulahendry.dotnet-test-explorer",
+				"patcx.vscode-nuget-gallery"
 			]
 		}
 	}
