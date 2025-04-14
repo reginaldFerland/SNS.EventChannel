@@ -541,4 +541,130 @@ public class EventChannelWorkerTests
         Assert.Contains("test-id", capturedMessage);
         Assert.Contains("Serialization Test", capturedMessage);
     }
+
+    // Last results: 59_220 items/minute
+    [Fact(Skip = "Long running test")]
+    public async Task Benchmark_OneMinute()
+    {
+        // Arrange
+        var eventChannel = new EventChannel<TestEvent>();
+        var mockSnsClient = new Mock<IAmazonSimpleNotificationService>();
+        var processedItems = 0;
+
+        // Setup a fast-responding mock SNS client that counts processed items
+        mockSnsClient
+            .Setup(x => x.PublishBatchAsync(It.IsAny<PublishBatchRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<PublishBatchRequest, CancellationToken>((req, _) =>
+            {
+                // Count the items in this batch
+                processedItems += req.PublishBatchRequestEntries.Count;
+            })
+            .ReturnsAsync((PublishBatchRequest req, CancellationToken _) =>
+            {
+                // Simulate a network delay
+                Task.Delay(10, _).Wait(_); // 10ms network latency simulation
+
+                // Create a successful response for all items
+                var response = new PublishBatchResponse
+                {
+                    Successful = req.PublishBatchRequestEntries
+                        .Select((entry, index) => new PublishBatchResultEntry
+                        {
+                            Id = entry.Id,
+                            MessageId = $"msg-{index}"
+                        })
+                        .ToList(),
+                    Failed = []
+                };
+                return response;
+            });
+
+        var config = new EventChannelWorkerConfig<TestEvent>
+        {
+            EventChannel = eventChannel,
+            TopicArn = "arn:aws:sns:us-east-1:123456789012:benchmark-topic",
+            SnsClient = mockSnsClient.Object,
+            // Use a custom, fast-responding resilience policy for benchmarking
+            ResiliencyPolicy = Policy
+                .Handle<Exception>()
+                .OrResult<PublishBatchResponse>(r => r.Failed.Count > 0)
+                .WaitAndRetryAsync(1, _ => TimeSpan.FromMilliseconds(1))
+        };
+
+        var worker = new EventChannelWorker<TestEvent>(config, _mockLogger.Object);
+
+        // Use a shorter benchmark duration for testing (10 seconds instead of a minute)
+        // This can be adjusted in real-world scenarios to run the full minute
+        const int benchmarkDurationSeconds = 60;
+        const int targetItemsPerMinute = 30_000; // Default rate limit for us-east-1 region
+
+        // Act
+        await worker.StartAsync(CancellationToken.None);
+
+        // Prepare a large batch of test items (more than we expect to process)
+        var testItems = Enumerable.Range(0, 1_000_000)
+            .Select(i => new TestEvent { Id = $"bench-{i}", Message = $"Benchmark message {i}" })
+            .ToList();
+
+        // Start stopwatch to measure actual processing time
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        // Start a background task to continuously feed the channel
+        var feedingTask = Task.Run(async () =>
+        {
+            foreach (var batch in testItems.Chunk(100))
+            {
+                await eventChannel.WriteAllAsync(batch);
+
+                // Small delay so channel might not be full when processing
+                await Task.Delay(1);
+
+                // If we've reached the benchmark duration, stop feeding
+                if (stopwatch.Elapsed.TotalSeconds >= benchmarkDurationSeconds)
+                {
+                    break;
+                }
+            }
+        });
+
+        // Wait for the benchmark duration
+        await Task.Delay(TimeSpan.FromSeconds(benchmarkDurationSeconds));
+
+        // Stop the stopwatch and worker
+        stopwatch.Stop();
+        await worker.StopAsync(CancellationToken.None);
+
+        // Wait for feeding task to complete
+        await feedingTask;
+
+        // Calculate items processed per minute
+        double durationMinutes = stopwatch.Elapsed.TotalMinutes;
+        double itemsPerMinute = processedItems / durationMinutes;
+
+        // Log the benchmark results
+        _mockLogger.Verify(
+            x => x.Log(
+                It.IsAny<LogLevel>(),
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((o, t) => true),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+
+        // Log the benchmark results ourselves
+        Console.WriteLine($"Benchmark Results:");
+        Console.WriteLine($"- Items processed: {processedItems}");
+        Console.WriteLine($"- Duration: {stopwatch.Elapsed}");
+        Console.WriteLine($"- Processing rate: {itemsPerMinute:F2} items/minute");
+
+        // Scale up the result to represent a full minute if we used a shorter time
+        double projectedItemsPerMinute = benchmarkDurationSeconds < 60
+            ? itemsPerMinute
+            : processedItems;
+
+        // Assert the throughput is over the target
+        Assert.True(projectedItemsPerMinute > targetItemsPerMinute,
+            $"Expected to process more than {targetItemsPerMinute} items per minute, " +
+            $"but only processed {projectedItemsPerMinute:F2} items per minute");
+    }
 }
