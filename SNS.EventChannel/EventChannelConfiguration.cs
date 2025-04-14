@@ -13,7 +13,13 @@ public class EventChannelConfig<T>
     public Type EventType { get; set; } = null!;
 
     /// <summary>
-    /// The maximum number of items that can be stored in the channel
+    /// Whether to use a bounded channel (true) or an unbounded channel (false)
+    /// </summary>
+    public bool UseBoundedCapacity { get; set; } = true;
+
+    /// <summary>
+    /// The maximum number of items that can be stored in the channel.
+    /// Only applicable when UseBoundedCapacity is true.
     /// </summary>
     public int BoundedCapacity { get; set; } = 1_000_000;
 }

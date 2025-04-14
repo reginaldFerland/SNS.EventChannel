@@ -59,6 +59,7 @@ builder.Services.AddEventChannel<OrderCreatedEvent>(options =>
         options.TopicArn = "EventChannel:TopicArn";
         options.MaxRetryAttempts = 3;
         options.BoundedCapacity = 1_000_000;
+        options.UseBoundedCapacity = true; // Set to false for unbounded channel
     });
 ```
 

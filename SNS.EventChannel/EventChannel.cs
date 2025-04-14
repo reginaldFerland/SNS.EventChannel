@@ -16,15 +16,27 @@ public class EventChannel<T> : IEventChannel
     private readonly Channel<T> _channel;
 
     /// <summary>
-    /// Creates a new instance of the EventChannel
+    /// Creates a new instance of the EventChannel with a bounded capacity
     /// </summary>
     /// <param name="boundedCapacity">The maximum number of items that can be stored in the channel</param>
     public EventChannel(int boundedCapacity = 1_000_000)
+        : this(true, boundedCapacity)
     {
-        _channel = Channel.CreateBounded<T>(new BoundedChannelOptions(boundedCapacity)
-        {
-            FullMode = BoundedChannelFullMode.Wait
-        });
+    }
+
+    /// <summary>
+    /// Creates a new instance of the EventChannel
+    /// </summary>
+    /// <param name="useBoundedCapacity">Whether to use a bounded channel (true) or an unbounded channel (false)</param>
+    /// <param name="boundedCapacity">The maximum number of items that can be stored in the channel (only applicable when useBoundedCapacity is true)</param>
+    public EventChannel(bool useBoundedCapacity, int boundedCapacity = 1_000_000)
+    {
+        _channel = useBoundedCapacity
+            ? Channel.CreateBounded<T>(new BoundedChannelOptions(boundedCapacity)
+            {
+                FullMode = BoundedChannelFullMode.Wait
+            })
+            : Channel.CreateUnbounded<T>();
     }
 
     /// <summary>

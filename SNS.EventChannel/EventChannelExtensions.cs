@@ -36,7 +36,7 @@ public static class EventChannelExtensions
 
         // Register the channel as singleton
         services.AddSingleton(sp =>
-            new EventChannel<T>(options.BoundedCapacity)
+            new EventChannel<T>(options.UseBoundedCapacity, options.BoundedCapacity)
         );
         services.AddSingleton<IEventChannel>(sp =>
             sp.GetRequiredService<EventChannel<T>>());
