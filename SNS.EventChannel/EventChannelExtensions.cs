@@ -3,6 +3,7 @@ using Amazon.SimpleNotificationService;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 
 namespace SNS.EventChannel;
 
@@ -33,34 +34,8 @@ public static class EventChannelExtensions
     /// <returns>The builder for method chaining</returns>
     public static IServiceCollection AddEventChannel<T>(
         this IServiceCollection services,
-        Action<EventChannelConfig> configure) where T : class
+        EventChannelConfig<T> options) where T : class
     {
-        var options = new EventChannelConfig();
-        configure.Invoke(options);
-
-        // Register AWS SNS client with proper configuration
-        services.TryAddSingleton<IAmazonSimpleNotificationService>(sp =>
-        {
-            var clientConfig = new AmazonSimpleNotificationServiceConfig();
-
-            // Configure region endpoint
-            if (!string.IsNullOrEmpty(options.RegionName))
-            {
-                clientConfig.RegionEndpoint = RegionEndpoint.GetBySystemName(options.RegionName);
-            }
-            else if (options.RegionEndpoint != null)
-            {
-                clientConfig.RegionEndpoint = options.RegionEndpoint;
-            }
-
-            // Configure service URL if provided
-            if (!string.IsNullOrEmpty(options.ServiceUrl))
-            {
-                clientConfig.ServiceURL = options.ServiceUrl;
-            }
-
-            return new AmazonSimpleNotificationServiceClient(clientConfig);
-        });
 
         // Register the channel as singleton
         services.AddSingleton(sp =>
@@ -72,11 +47,9 @@ public static class EventChannelExtensions
         // Register the worker as a hosted service with config
         services.AddHostedService(sp =>
             new EventChannelWorker<T>(
-                sp.GetRequiredService<EventChannel<T>>(),
-                sp.GetRequiredService<IAmazonSimpleNotificationService>(),
-                options.TopicArn,
-                sp.GetRequiredService<ILogger<EventChannelWorker<T>>>(),
-                options.MaxRetryAttempts));
+                options.WorkerConfig,
+                sp.GetRequiredService<ILogger<EventChannelWorker<T>>>()
+                ));
 
         return services;
     }

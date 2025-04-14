@@ -32,19 +32,16 @@ public class EventChannelWorker<T> : IHostedService
     /// <param name="maxRetryAttempts">Maximum number of retry attempts for publishing</param>
     /// <param name="logger">Logger for diagnostic information</param>
     public EventChannelWorker(
-        EventChannel<T> eventChannel,
-        IAmazonSimpleNotificationService snsClient,
-        string topicArn,
-        ILogger<EventChannelWorker<T>> logger,
-        int maxRetryAttempts = 3)
+        EventChannelWorkerConfig<T> config,
+        ILogger<EventChannelWorker<T>> logger)
     {
-        _eventChannel = eventChannel ?? throw new ArgumentNullException(nameof(eventChannel));
-        _snsClient = snsClient ?? throw new ArgumentNullException(nameof(snsClient));
-        _topicArn = topicArn ?? throw new ArgumentNullException(nameof(topicArn));
+        _topicArn = config.TopicArn ?? throw new ArgumentNullException(nameof(config));
+        _snsClient = config.SnsClient ?? throw new ArgumentNullException(nameof(config));
+        _eventChannel = config.EventChannel ?? throw new ArgumentNullException(nameof(config));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         // Create resilience policy combining retry and rate limiting
-        _resiliencyPolicy = CreateResiliencyPolicy(maxRetryAttempts);
+        _resiliencyPolicy = config.ResiliencyPolicy ?? CreateResiliencyPolicy(config.MaxRetryAttempts);
 
         _logger.LogInformation("EventChannelWorker initialized with topic ARN: {TopicArn}", _topicArn);
     }
