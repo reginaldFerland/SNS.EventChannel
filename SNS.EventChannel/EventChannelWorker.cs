@@ -104,14 +104,6 @@ public class EventChannelWorker<T> : IHostedService
                         }
                     }
                 }
-
-                // Process any remaining items in the buffer
-                if (batchBuffer.Count > 0)
-                {
-                    _logger.LogDebug("Processing remaining {Count} items in buffer", batchBuffer.Count);
-                    await ProcessBatchAsync(batchBuffer, cancellationToken);
-                    batchBuffer.Clear();
-                }
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
