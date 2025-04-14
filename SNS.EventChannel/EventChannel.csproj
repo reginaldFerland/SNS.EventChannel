@@ -16,7 +16,7 @@
     <RepositoryUrl>https://github.com/reginaldFerland/SNS.EventChannel</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <README>../README.md</README>
-    <PackageLicenseFile>../LICENSE</PackageLicenseFile>
+    <PackageLicenseFile>../LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
